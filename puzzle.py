@@ -1,3 +1,5 @@
+import heapq as hq
+
 # globals
 # default puzzles
 trivial = [['A','N','G'],
@@ -81,21 +83,39 @@ def select_and_init_algorithm(puzzle):
     algorithm = input("Select algorithm. (1) for Uniform Cost Search, (2) for Misplaced Tile Heuristic, " +
     "or (3) for Manhattan Distance Heuristic.\n")
     # print(algorithm + '\n')
-    if algorithm == "1":
-        uniform_cost_search(puzzle)
-    if algorithm == "2":
-        misplaced_tile_heuristic(puzzle)
-    if algorithm == "3":
-        manhattan_distance_heuristic(puzzle)
+    search(puzzle, algorithm)
 
-def uniform_cost_search(puzzle):
-    print_puzzle(puzzle)
+class TreeNode:
+    def __init__(self, state=None):
+        self.state = state
+        self.left = None
+        self.right = None
+    
+    def equal(self,puzzle):
+        for i in range(0,3):
+            if puzzle[i] != self.state[i]:
+                return False
+        return True
 
-def misplaced_tile_heuristic(puzzle):
-    print_puzzle(puzzle)
+def search(puzzle,heuristic):
+    starting_node = TreeNode(puzzle)
+    working_queue = []
+    hq.heappush(working_queue,starting_node)
+    num_nodes_expanded = 0
+    max_queue_size = 0
 
-def manhattan_distance_heuristic(puzzle):
-    print_puzzle(puzzle)
+    stack_to_print = []
+
+    while len(working_queue ) > 0:
+        max_queue_size = max(len(working_queue),max_queue_size)
+        node_from_queue = hq.heappop(working_queue)
+        if node_from_queue.equal(goal_state):
+            while len(stack_to_print) > 0:
+                print_puzzle(stack_to_print.pop())
+                print("Number of nodes expanded: ",num_nodes_expanded)
+                print("Max queue size: ",max_queue_size)
+                return node_from_queue
+        stack_to_print.append(node_from_queue.state)
 
 if __name__ == '__main__':
     main()
