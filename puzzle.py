@@ -1,3 +1,34 @@
+# globals
+# default puzzles
+trivial = [['A','N','G'],
+           ['E','L','I'],
+           ['C','A','.']]
+
+very_easy = [['A','N','G'],
+             ['E','L','I'],
+             ['C','A','.']]
+
+easy = [['A','N','G'],
+        ['E','L','I'],
+        ['C','A','.']]
+
+doable = [['A','N','G'],
+          ['E','L','I'],
+          ['C','A','.']]
+
+oh_boy = [['A','N','G'],
+          ['E','L','I'],
+          ['C','A','.']]
+
+impossible = [['A','N','G'],
+              ['E','L','I'],
+              ['C','A','.']]
+
+# goal state
+goal_state = [['A','N','G'],
+              ['E','L','I'],
+              ['C','A','.']]
+
 def main():
     puzzle_mode = input("Welcome to Vivek's ANGELICA-puzzle solver. Type '1' to use default puzzle or '2' to create your own.\n")
     if puzzle_mode == "1":
@@ -44,6 +75,16 @@ def print_puzzle(puzzle):
     for i in range(0,3):
         print(puzzle[i])
     print('\n')
+
+def select_and_init_algorithm(puzzle):
+    algorithm = input("Select algorithm. (1) for Uniform Cost Search, (2) for Misplaced Tile Heuristic, " +
+    "or (3) for Manhattan Distance Heuristic.\n")
+    if algorithm == "1":
+        uniform_cost_search(puzzle)
+    if algorithm == "2":
+        misplaced_tile_heuristic(puzzle)
+    if algorithm == "3":
+        manhattan_distance_heuristic(puzzle)
 
 if __name__ == '__main__':
     main()
