@@ -30,6 +30,7 @@ goal_state = [['A','N','G'],
               ['C','A','.']]
 
 def main():
+    # print(easy)
     puzzle_mode = input("Welcome to Vivek's ANGELICA-puzzle solver. Type '1' to use default puzzle or '2' to create your own.\n")
     if puzzle_mode == "1":
         select_and_init_algorithm(init_default_puzzle_mode())
@@ -52,39 +53,49 @@ def main():
 
 def init_default_puzzle_mode():
     selected_difficulty = input("You wish to use a default puzzle. Please enter a desired difficulty on a scale from 0 to 5.\n")
-    if selected_difficulty == 0:
+    # print(selected_difficulty + '\n')
+    if selected_difficulty == "0":
         print("Difficulty of 'Trivial' selected.")
         return trivial
-    if selected_difficulty == 1:
+    if selected_difficulty == "1":
         print("Difficulty of 'Very Easy' selected.")
         return very_easy
-    if selected_difficulty == 2:
+    if selected_difficulty == "2":
         print("Difficulty of 'Easy' selected")
         return easy
-    if selected_difficulty == 3:
+    if selected_difficulty == "3":
         print("Difficulty of 'Doable' selected")
         return doable
-    if selected_difficulty == 4:
+    if selected_difficulty == "4":
         print("Difficulty of 'Oh Boy' selected")
         return oh_boy
-    if selected_difficulty == 5:
+    if selected_difficulty == "5":
         print("Difficulty of 'Impossible' selected")
         return impossible
 
 def print_puzzle(puzzle):
-    for i in range(0,3):
-        print(puzzle[i])
+    print(puzzle)
     print('\n')
 
 def select_and_init_algorithm(puzzle):
     algorithm = input("Select algorithm. (1) for Uniform Cost Search, (2) for Misplaced Tile Heuristic, " +
     "or (3) for Manhattan Distance Heuristic.\n")
+    # print(algorithm + '\n')
     if algorithm == "1":
         uniform_cost_search(puzzle)
     if algorithm == "2":
         misplaced_tile_heuristic(puzzle)
     if algorithm == "3":
         manhattan_distance_heuristic(puzzle)
+
+def uniform_cost_search(puzzle):
+    print_puzzle(puzzle)
+
+def misplaced_tile_heuristic(puzzle):
+    print_puzzle(puzzle)
+
+def manhattan_distance_heuristic(puzzle):
+    print_puzzle(puzzle)
 
 if __name__ == '__main__':
     main()
