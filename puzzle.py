@@ -4,34 +4,35 @@ import copy
 # globals
 # default puzzles
 trivial = [['A','N','G'],
-           ['E','L','I'],
-           ['C','A','.']]
+           ['E','L','.'],
+           ['C','A','I']]
 
 very_easy = [['A','N','G'],
              ['E','L','I'],
-             ['C','A','.']]
+             ['.','C','A']]
 
 easy = [['A','N','G'],
-        ['E','L','I'],
-        ['C','A','.']]
+        ['L','.','I'],
+        ['E','C','A']]
 
-doable = [['A','N','G'],
-          ['E','L','I'],
-          ['C','A','.']]
+doable = [['A','G','I'],
+          ['L','.','N'],
+          ['E','C','A']]
 
-oh_boy = [['A','N','G'],
-          ['E','L','I'],
-          ['C','A','.']]
+oh_boy = [['A','I','C'],
+          ['L','.','G'],
+          ['E','A','N']]
 
-impossible = [['A','N','G'],
-              ['E','L','I'],
-              ['C','A','.']]
+impossible = [['.','C','N'],
+              ['E','I','A'],
+              ['G','L','A']]
 
 # goal state
 goal_state = [['A','N','G'],
               ['E','L','I'],
               ['C','A','.']]
 
+# main driver function
 def main():
     puzzle_mode = input("Welcome to Vivek's ANGELICA-puzzle solver. Type '1' to use default puzzle or '2' to create your own.\n")
     if puzzle_mode == "1":
@@ -53,6 +54,7 @@ def main():
 
     return
 
+# default puzzle sub menu
 def init_default_puzzle_mode():
     selected_difficulty = input("You wish to use a default puzzle. Please enter a desired difficulty on a scale from 0 to 5.\n")
     # print(selected_difficulty + '\n')
@@ -75,6 +77,7 @@ def init_default_puzzle_mode():
         print("Difficulty of 'Impossible' selected")
         return impossible
 
+# print a puzzle
 def print_puzzle(puzzle):
     for i in range(0,3):
         print("[%s]" % (', '.join(puzzle[i])))
@@ -94,15 +97,10 @@ class TreeNode:
         self.blank_col = blank_col
         self.g = g
         self.h = h
-    
-    def equal(self,puzzle):
-        for i in range(0,3):
-            if puzzle[i] != self.state[i]:
-                return False
-        return True
 
+    # overide built in comparison function for using heapq
     def __lt__(self,other):
-        return (self.h + self.g) < (other.h + other.g)
+        return (self.h + self.g) < (other.h + other.g) # f(n) = g(n) + h(n)
 
 def move(puzzle, row, col, direction):
     # print_puzzle(puzzle)
@@ -147,6 +145,9 @@ def expand(node):
 
     return nodes
 
+def to_tuple(puzzle):
+    return tuple(map(tuple,puzzle))
+
 def search(puzzle,heuristic):
     starting_node = TreeNode(puzzle)
     for i in range(0,3):
@@ -160,13 +161,21 @@ def search(puzzle,heuristic):
     hq.heappush(working_queue,starting_node)
     num_nodes_expanded = 0
     max_queue_size = 0
+    repeated_states = dict()
 
     while len(working_queue ) > 0:
         max_queue_size = max(len(working_queue),max_queue_size)
         node_from_queue = hq.heappop(working_queue)
+        # if we have reached a repeated state then take the state with the lower path cost
+        hashable_state = to_tuple(node_from_queue.state)
+        if hashable_state in repeated_states:
+            if node_from_queue.g + node_from_queue.h > repeated_states[hashable_state]:
+                continue
+        else:
+            repeated_states[hashable_state] = node_from_queue.g + node_from_queue.h
         print("The best state to expand with a g(n) = " + str(node_from_queue.g) + " and h(n) = " + str(node_from_queue.h) + " is...\n")
         print_puzzle(node_from_queue.state)
-        if node_from_queue.equal(goal_state): # success
+        if node_from_queue.state == goal_state: # success
             print("Number of nodes expanded: ",num_nodes_expanded)
             print("Max queue size: ",max_queue_size)
             return True
