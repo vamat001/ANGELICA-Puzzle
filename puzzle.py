@@ -86,16 +86,51 @@ def select_and_init_algorithm(puzzle):
     search(puzzle, algorithm)
 
 class TreeNode:
-    def __init__(self, state=None):
+    def __init__(self, state=None, g=0, h=0):
         self.state = state
-        self.left = None
-        self.right = None
+        self.blank_row = None
+        self.blank_col = None
+        self.g = g
+        self.h = h
     
     def equal(self,puzzle):
         for i in range(0,3):
             if puzzle[i] != self.state[i]:
                 return False
         return True
+
+def move(puzzle, row, col, direction):
+    if direction == "up":
+        # move blank up
+        puzzle[row+1][col], puzzle[row][col] = puzzle[row][col], puzzle[row+1][col]
+    if direction == "down":
+        # move blank down
+        puzzle[row-1][col], puzzle[row][col] = puzzle[row][col], puzzle[row-1][col]
+    if direction == "left":
+        # move blank left
+        puzzle[row][col-1], puzzle[row][col] = puzzle[row][col], puzzle[row][col-1]
+    if direction == "right":
+        # move blank right
+        puzzle[row][col+1], puzzle[row][col] = puzzle[row][col], puzzle[row][col+1]
+
+    return puzzle
+
+def expand(node):
+    nodes = []
+    if node.blank_row > 0:
+        # move blank down
+        nodes.append(TreeNode(move(node.state,node.blank_row,node.blank_col,"down"),node.g+1))
+    if node.blank_col > 0:
+        # move blank left
+        nodes.append(TreeNode(move(node.state,node.blank_row,node.blank_col,"left"),node.g+1))
+    if node.blank_col < 2:
+        # move blank right
+        nodes.append(TreeNode(move(node.state,node.blank_row,node.blank_col,"right"),node.g+1))
+    if node.blank_row < 2:
+        # move blank up
+        nodes.append(TreeNode(move(node.state,node.blank_row,node.blank_col,"up"),node.g+1))
+    
+    return nodes
 
 def search(puzzle,heuristic):
     starting_node = TreeNode(puzzle)
@@ -109,13 +144,19 @@ def search(puzzle,heuristic):
     while len(working_queue ) > 0:
         max_queue_size = max(len(working_queue),max_queue_size)
         node_from_queue = hq.heappop(working_queue)
-        if node_from_queue.equal(goal_state):
+        if node_from_queue.equal(goal_state): # success
             while len(stack_to_print) > 0:
                 print_puzzle(stack_to_print.pop())
                 print("Number of nodes expanded: ",num_nodes_expanded)
                 print("Max queue size: ",max_queue_size)
                 return node_from_queue
         stack_to_print.append(node_from_queue.state)
+        # expand node by applying operators
+        nodes = expand(node_from_queue)
+        for node in nodes:
+            hq.heappush(working_queue,node)
+    
+    return -1 # search failed
 
 if __name__ == '__main__':
     main()
