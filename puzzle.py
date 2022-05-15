@@ -5,32 +5,36 @@ import copy
 # default puzzles
 trivial = [['A','N','G'],
            ['E','L','.'],
-           ['C','A','I']]
+           ['C','a','I']]
 
 very_easy = [['A','N','G'],
              ['E','L','I'],
-             ['.','C','A']]
+             ['.','C','a']]
 
 easy = [['A','N','G'],
         ['L','.','I'],
-        ['E','C','A']]
+        ['E','C','a']]
 
 doable = [['A','G','I'],
           ['L','.','N'],
-          ['E','C','A']]
+          ['E','C','a']]
 
 oh_boy = [['A','I','C'],
           ['L','.','G'],
-          ['E','A','N']]
+          ['E','a','N']]
 
 impossible = [['.','C','N'],
               ['E','I','A'],
-              ['G','L','A']]
+              ['G','L','a']]
+
+destruction = [['a','C','A'],
+              ['I','.','N'],
+              ['L','E','G']]
 
 # goal state
 goal_state = [['A','N','G'],
               ['E','L','I'],
-              ['C','A','.']]
+              ['C','a','.']]
 
 # main driver function
 def main():
@@ -39,7 +43,7 @@ def main():
         select_and_init_algorithm(init_default_puzzle_mode())
     if puzzle_mode == "2":
         print("Enter your own puzzle, using '.' to represent the blank. " +
-        "Please only enter valid puzzles. Enter the puzzle delimiting the characters with spaces. RET only when finished.\n")
+        "Please only enter valid puzzles. Enter the puzzle delimiting the characters with spaces.\nUse lower case 'a' to denote the second 'A' in 'ANGELICa'. RET only when finished.\n")
     
         row_one = input("Enter the first row: ")
         row_two = input("Enter the second row: ")
@@ -56,7 +60,7 @@ def main():
 
 # default puzzle sub menu
 def init_default_puzzle_mode():
-    selected_difficulty = input("You wish to use a default puzzle. Please enter a desired difficulty on a scale from 0 to 5.\n")
+    selected_difficulty = input("You wish to use a default puzzle. Please enter a desired difficulty on a scale from 0 to 6.\n")
     # print(selected_difficulty + '\n')
     if selected_difficulty == "0":
         print("Difficulty of 'Trivial' selected.")
@@ -76,6 +80,9 @@ def init_default_puzzle_mode():
     if selected_difficulty == "5":
         print("Difficulty of 'Impossible' selected")
         return impossible
+    if selected_difficulty == "6":
+        print("Difficulty of 'Destruction' selected")
+        return destruction
 
 # print a puzzle
 def print_puzzle(puzzle):
@@ -102,6 +109,32 @@ class TreeNode:
     def __lt__(self,other):
         return (self.h + self.g) < (other.h + other.g) # f(n) = g(n) + h(n)
 
+# calculate different heuristics
+def calc_heuristic(puzzle, heuristic):
+    if heuristic == "1": # uniform cost
+        return 0
+    if heuristic == "2": # misplaced tile
+        misplaced_tiles = 0
+        for i in range(0,3):
+            for j in range(0,3):
+                if puzzle[i][j] != goal_state[i][j]:
+                    misplaced_tiles += 1
+        return misplaced_tiles
+    if heuristic == "3": # manhattan distance
+        coords = dict()
+        # store coordinates of one puzzle in dict for comparison
+        for i in range(0,3):
+            for j in range(0,3):
+                coords[puzzle[i][j]] = (i,j)
+        dist = 0
+        for i in range(0,3):
+            for j in range(0,3):
+                coord = coords[goal_state[i][j]]
+                # print(puzzle[coord[0]][coord[1]] + " " + goal_state[i][j] + str(coord) + " " + str((i,j)))
+                dist += abs(coord[0] - i) + abs(coord[1] - j)
+
+        return dist
+
 def move(puzzle, row, col, direction):
     # print_puzzle(puzzle)
     if direction == "up":
@@ -120,26 +153,34 @@ def move(puzzle, row, col, direction):
     # print_puzzle(puzzle)
     return puzzle
 
-def expand(node):
+def expand(node, heuristic):
     nodes = []
     if node.blank_row > 0:
         # move blank up
         new_node = TreeNode(move(copy.deepcopy(node.state),node.blank_row,node.blank_col,"up"),node.g+1,0,node.blank_row-1,node.blank_col)
+        # apply heuristic
+        new_node.h = calc_heuristic(new_node.state, heuristic)
         nodes.append(new_node)
         # print("up")
     if node.blank_col > 0:
         # move blank left
         new_node = TreeNode(move(copy.deepcopy(node.state),node.blank_row,node.blank_col,"left"),node.g+1,0,node.blank_row,node.blank_col-1)
+        # apply heuristic
+        new_node.h = calc_heuristic(new_node.state, heuristic)
         nodes.append(new_node)
         # print("left")
     if node.blank_col < 2:
         # move blank right
         new_node = TreeNode(move(copy.deepcopy(node.state),node.blank_row,node.blank_col,"right"),node.g+1,0,node.blank_row,node.blank_col+1)
+        # apply heuristic
+        new_node.h = calc_heuristic(new_node.state, heuristic)
         nodes.append(new_node)
         # print("right")
     if node.blank_row < 2:
         # move blank down
         new_node = TreeNode(move(copy.deepcopy(node.state),node.blank_row,node.blank_col,"down"),node.g+1,0,node.blank_row+1,node.blank_col)
+        # apply heuristic
+        new_node.h = calc_heuristic(new_node.state, heuristic)
         nodes.append(new_node)
         # print("down")
 
@@ -180,7 +221,7 @@ def search(puzzle,heuristic):
             print("Max queue size: ",max_queue_size)
             return True
         # expand node by applying operators
-        nodes = expand(node_from_queue)
+        nodes = expand(node_from_queue, heuristic)
         for node in nodes:
             hq.heappush(working_queue,node)
         num_nodes_expanded += 1
