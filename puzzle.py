@@ -1,5 +1,6 @@
 import heapq as hq
 import copy
+from datetime import datetime
 
 # globals
 # default puzzles
@@ -27,62 +28,26 @@ impossible = [['.','C','N'],
               ['E','I','A'],
               ['G','L','a']]
 
-destruction = [['a','C','A'],
-              ['I','.','N'],
-              ['L','E','G']]
+destruction = [['a','I','C'],
+              ['N','L','E'],
+              ['G','.','A']]
 
 # goal state
 goal_state = [['A','N','G'],
               ['E','L','I'],
               ['C','a','.']]
 
-# main driver function
-def main():
-    puzzle_mode = input("Welcome to Vivek's ANGELICA-puzzle solver. Type '1' to use default puzzle or '2' to create your own.\n")
-    if puzzle_mode == "1":
-        select_and_init_algorithm(init_default_puzzle_mode())
-    if puzzle_mode == "2":
-        print("Enter your own puzzle, using '.' to represent the blank. " +
-        "Please only enter valid puzzles. Enter the puzzle delimiting the characters with spaces.\nUse lower case 'a' to denote the second 'A' in 'ANGELICa'. RET only when finished.\n")
-    
-        row_one = input("Enter the first row: ")
-        row_two = input("Enter the second row: ")
-        row_three = input("Enter the third row: ")
+class TreeNode:
+    def __init__(self, state=None, g=0, h=0, blank_row=None, blank_col=None):
+        self.state = state
+        self.blank_row = blank_row
+        self.blank_col = blank_col
+        self.g = g
+        self.h = h
 
-        row_one = row_one.split()
-        row_two = row_two.split()
-        row_three = row_three.split()
-
-        user_puzzle = [row_one, row_two, row_three]
-        select_and_init_algorithm(user_puzzle)
-
-    return
-
-# default puzzle sub menu
-def init_default_puzzle_mode():
-    selected_difficulty = input("You wish to use a default puzzle. Please enter a desired difficulty on a scale from 0 to 6.\n")
-    # print(selected_difficulty + '\n')
-    if selected_difficulty == "0":
-        print("Difficulty of 'Trivial' selected.")
-        return trivial
-    if selected_difficulty == "1":
-        print("Difficulty of 'Very Easy' selected.")
-        return very_easy
-    if selected_difficulty == "2":
-        print("Difficulty of 'Easy' selected")
-        return easy
-    if selected_difficulty == "3":
-        print("Difficulty of 'Doable' selected")
-        return doable
-    if selected_difficulty == "4":
-        print("Difficulty of 'Oh Boy' selected")
-        return oh_boy
-    if selected_difficulty == "5":
-        print("Difficulty of 'Impossible' selected")
-        return impossible
-    if selected_difficulty == "6":
-        print("Difficulty of 'Destruction' selected")
-        return destruction
+    # overide built in comparison function for using heapq
+    def __lt__(self,other):
+        return (self.h + self.g) < (other.h + other.g) # f(n) = g(n) + h(n)
 
 # print a puzzle
 def print_puzzle(puzzle):
@@ -96,18 +61,6 @@ def select_and_init_algorithm(puzzle):
     # print(algorithm + '\n')
     if not(search(puzzle, algorithm)):
         print("\nSearch failed!\n")
-
-class TreeNode:
-    def __init__(self, state=None, g=0, h=0, blank_row=None, blank_col=None):
-        self.state = state
-        self.blank_row = blank_row
-        self.blank_col = blank_col
-        self.g = g
-        self.h = h
-
-    # overide built in comparison function for using heapq
-    def __lt__(self,other):
-        return (self.h + self.g) < (other.h + other.g) # f(n) = g(n) + h(n)
 
 # calculate different heuristics
 def calc_heuristic(puzzle, heuristic):
@@ -203,7 +156,7 @@ def search(puzzle,heuristic):
     num_nodes_expanded = 0
     max_queue_size = 0
     repeated_states = dict()
-
+    start = datetime.now()
     while len(working_queue ) > 0:
         max_queue_size = max(len(working_queue),max_queue_size)
         node_from_queue = hq.heappop(working_queue)
@@ -219,6 +172,7 @@ def search(puzzle,heuristic):
         if node_from_queue.state == goal_state: # success
             print("Number of nodes expanded: ",num_nodes_expanded)
             print("Max queue size: ",max_queue_size)
+            print(datetime.now() - start)
             return True
         # expand node by applying operators
         nodes = expand(node_from_queue, heuristic)
@@ -227,6 +181,54 @@ def search(puzzle,heuristic):
         num_nodes_expanded += 1
     
     return False # search failed
+
+# default puzzle sub menu
+def init_default_puzzle_mode():
+    selected_difficulty = input("You wish to use a default puzzle. Please enter a desired difficulty on a scale from 0 to 6.\n")
+    # print(selected_difficulty + '\n')
+    if selected_difficulty == "0":
+        print("Difficulty of 'Trivial' selected.")
+        return trivial
+    if selected_difficulty == "1":
+        print("Difficulty of 'Very Easy' selected.")
+        return very_easy
+    if selected_difficulty == "2":
+        print("Difficulty of 'Easy' selected")
+        return easy
+    if selected_difficulty == "3":
+        print("Difficulty of 'Doable' selected")
+        return doable
+    if selected_difficulty == "4":
+        print("Difficulty of 'Oh Boy' selected")
+        return oh_boy
+    if selected_difficulty == "5":
+        print("Difficulty of 'Impossible' selected")
+        return impossible
+    if selected_difficulty == "6":
+        print("Difficulty of 'Destruction' selected")
+        return destruction
+
+# main driver function
+def main():
+    puzzle_mode = input("Welcome to Vivek's ANGELICA-puzzle solver. Type '1' to use default puzzle or '2' to create your own.\n")
+    if puzzle_mode == "1":
+        select_and_init_algorithm(init_default_puzzle_mode())
+    if puzzle_mode == "2":
+        print("Enter your own puzzle, using '.' to represent the blank. " +
+        "Please only enter valid puzzles. Enter the puzzle delimiting the characters with spaces.\nUse lower case 'a' to denote the second 'A' in 'ANGELICa'. RET only when finished.\n")
+    
+        row_one = input("Enter the first row: ")
+        row_two = input("Enter the second row: ")
+        row_three = input("Enter the third row: ")
+
+        row_one = row_one.split()
+        row_two = row_two.split()
+        row_three = row_three.split()
+
+        user_puzzle = [row_one, row_two, row_three]
+        select_and_init_algorithm(user_puzzle)
+
+    return
 
 if __name__ == '__main__':
     main()
